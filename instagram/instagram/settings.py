@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-obg%8-9ja4dmelq(b%!)!x9(58foylvzdd&^!oo3i5g7=z1g4&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["141.136.245.226", "127.0.0.1"]
+ALLOWED_HOSTS = ["instagram-clone-app-dhuy.onrender.com", "127.0.0.1"]
 
 
 # Application definition
