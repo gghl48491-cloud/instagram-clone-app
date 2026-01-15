@@ -1,0 +1,25 @@
+{% extends 'account/auth_base.html' %}
+
+{% block title %}Odjavljivanje - Instagram Clone{% endblock %}
+
+{% block content %}
+    <div class="auth-header">
+        <div style="font-size: 2rem; margin-bottom: 1rem;">👋</div>
+        <h1>Odjavljivanje</h1>
+        <p>Siguran/a ste da želite da se odjavite?</p>
+    </div>
+
+    <p style="text-align: center; color: #999; margin-bottom: 1.5rem; font-size: 0.9rem;">
+        Trenutno ste prijavljeni kao <strong>{{ user.username }}</strong>
+    </p>
+
+    <form method="post" class="auth-form" action="{% url 'account_logout' %}">
+        {% csrf_token %}
+        
+        <button type="submit" class="btn-auth">Da, odjavi me</button>
+    </form>
+
+    <div style="text-align: center; margin-top: 1rem;">
+        <a href="/" style="color: #0095f6; text-decoration: none; font-weight: 600; font-size: 0.85rem;">Ostani prijavljen</a>
+    </div>
+{% endblock %}

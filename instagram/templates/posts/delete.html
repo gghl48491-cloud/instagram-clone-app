@@ -1,0 +1,35 @@
+{% extends 'posts/base.html' %}
+
+{% block title %}Obriši Post{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 500px; margin: 2rem auto;">
+    <div style="background: white; border: 1px solid #dbdbdb; border-radius: 3px; padding: 2rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+            <h1 style="font-size: 1.5rem; color: #262626; margin-bottom: 0.5rem;">Obriši Post?</h1>
+            <p style="color: #999; font-size: 0.95rem;">Ova akcija se ne može poništiti. Post će biti trajno obrisan.</p>
+        </div>
+
+        {% if object %}
+        <div style="background: #fafafa; border: 1px solid #dbdbdb; border-radius: 3px; padding: 1.5rem; margin-bottom: 2rem;">
+            <h3 style="margin-top: 0; margin-bottom: 0.75rem; color: #262626;">{{ object.title }}</h3>
+            {% if object.post_image %}
+                <img src="{{ object.post_image.url }}" alt="{{ object.title }}" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 3px; margin-bottom: 1rem;">
+            {% endif %}
+            <p style="color: #666; margin: 0; word-break: break-word;">{{ object.content|truncatewords:30 }}</p>
+        </div>
+        {% endif %}
+
+        <form method="post" style="display: flex; gap: 0.75rem;">
+            {% csrf_token %}
+            <button type="submit" style="flex: 1; background: #ed4956; color: white; border: none; padding: 0.75rem 1rem; border-radius: 24px; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                Da, obriši post
+            </button>
+            <a href="/" style="flex: 1; text-align: center; background: #f0f0f0; color: #262626; border: none; padding: 0.75rem 1rem; border-radius: 24px; font-weight: 600; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                Odustani
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

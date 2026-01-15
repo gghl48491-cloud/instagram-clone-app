@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Instagram Clone{% endblock %}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        html { font-size: 16px; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: #fafafa;
+            color: #262626;
+        }
+
+        /* Navbar Instagram Style */
+        .navbar {
+            background: white;
+            border-bottom: 1px solid #dbdbdb;
+            padding: 0.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0.5rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #000;
+            text-decoration: none;
+            font-family: Georgia, serif;
+            letter-spacing: -2px;
+        }
+
+        .navbar-menu {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .navbar-menu a, .navbar-menu button {
+            text-decoration: none;
+            color: #262626;
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            transition: all 0.2s;
+        }
+
+        .navbar-menu a:hover, .navbar-menu button:hover {
+            color: #999;
+        }
+
+        .btn-nav-primary {
+            background: #0095f6 !important;
+            color: white !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: 24px !important;
+            font-weight: 600 !important;
+            font-size: 0.9rem !important;
+        }
+
+        .btn-nav-primary:hover {
+            background: #0084d9 !important;
+        }
+
+        .navbar-toggle { display: none; }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid #dbdbdb;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #262626;
+        }
+
+        .header p {
+            font-size: 0.95rem;
+            color: #999;
+        }
+
+        /* Container */
+        .container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .container.profile-me-container { max-width: 1200px; }
+
+        /* Posts Feed */
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        /* Post Card Instagram Style */
+        .post-card, .post {
+            background: white;
+            border: 1px solid #dbdbdb;
+            border-radius: 3px;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .post-card:hover, .post:hover {
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .post-image-wrapper, .post img, .post-grid-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .post-grid-image img { width: 100%; height: 100%; object-fit: cover; }
+
+        .post-content {
+            padding: 1rem;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #efefef;
+        }
+
+        .post-header-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .post-header-info h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #262626;
+            margin: 0;
+        }
+
+        .post-header-info small {
+            font-size: 0.8rem;
+            color: #999;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 1rem;
+            padding: 0.5rem 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .post-action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.3rem;
+            transition: all 0.2s;
+            padding: 0.25rem;
+        }
+
+        .post-action-btn:hover { opacity: 0.6; }
+
+        .post-stats {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 0.5rem;
+        }
+
+        .post-description {
+            font-size: 0.9rem;
+            color: #262626;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .post-timestamp {
+            font-size: 0.8rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .post-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #262626;
+            margin-bottom: 0.5rem;
+            text-decoration: none;
+            display: block;
+        }
+
+        .post-title:hover { color: #999; }
+
+        .post p { font-size: 0.9rem; color: #262626; margin-bottom: 0.5rem; }
+
+        /* Comments Section */
+        .comments-section {
+            border-top: 1px solid #efefef;
+            padding: 0.75rem 0;
+            margin-top: 0.75rem;
+        }
+
+        .comment-item {
+            display: flex;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .comment-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .comment-content {
+            flex: 1;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: #262626;
+            text-decoration: none;
+        }
+
+        .comment-author:hover { color: #999; }
+
+        .comment-text {
+            color: #262626;
+            word-break: break-word;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 0.25rem;
+        }
+
+        .comment-action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            transition: all 0.2s;
+        }
+
+        .comment-action-btn:hover { color: #262626; }
+
+        /* Buttons */
+        .btn-primary {
+            background: #0095f6;
+            color: white;
+            border: none;
+            padding: 0.6rem 1.5rem;
+            border-radius: 24px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover { background: #0084d9; }
+
+        .btn-secondary {
+            background: white;
+            color: #0095f6;
+            border: 2px solid #0095f6;
+            padding: 0.5rem 1.5rem;
+            border-radius: 24px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover { background: #f0f7ff; }
+
+        .btn-danger {
+            background: #ed4956;
+            color: white;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 24px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .btn-danger:hover { background: #c41d24; }
+
+        /* Form Inputs */
+        input[type="text"], input[type="email"], input[type="password"], textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #dbdbdb;
+            border-radius: 3px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: border 0.2s;
+        }
+
+        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, textarea:focus {
+            outline: none;
+            border-color: #999;
+            background: #fafafa;
+        }
+
+        /* File Input */
+        input[type="file"] {
+            padding: 0.75rem;
+            border: 1px solid #dbdbdb;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        /* Profile */
+        .profile-header {
+            background: white;
+            border: 1px solid #dbdbdb;
+            border-radius: 3px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .profile-avatar { flex-shrink: 0; }
+
+        .avatar-container {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .avatar-img, .avatar-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .avatar-circle {
+            background: linear-gradient(135deg, #0095f6, #ed4956);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 4rem;
+            font-weight: 700;
+        }
+
+        .avatar-overlay {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .avatar-container:hover .avatar-overlay { opacity: 1; }
+
+        .profile-info { flex: 1; }
+
+        .profile-info h1 {
+            font-size: 1.75rem;
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-info p {
+            color: #999;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Tabs */
+        .tabs-container {
+            background: white;
+            border: 1px solid #dbdbdb;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .tabs-nav {
+            display: flex;
+            border-bottom: 1px solid #dbdbdb;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 1rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #999;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            color: #262626;
+            border-bottom-color: #262626;
+        }
+
+        .tab-content { display: none; padding: 2rem; }
+
+        .tab-content.active { display: block; }
+
+        /* Grid Layouts */
+        .posts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1.5rem; }
+
+        .post-grid-item {
+            aspect-ratio: 1;
+            background: white;
+            border: 1px solid #dbdbdb;
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .post-grid-item:hover { border-color: #262626; }
+
+        .post-grid-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .user-card {
+            text-align: center;
+            padding: 1rem;
+            background: white;
+            border: 1px solid #dbdbdb;
+            border-radius: 3px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .user-card:hover { border-color: #262626; }
+
+        .user-avatar, .user-avatar-placeholder {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 0.75rem;
+            object-fit: cover;
+        }
+
+        .user-avatar-placeholder {
+            background: linear-gradient(135deg, #0095f6, #ed4956);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 2rem;
+        }
+
+        .user-card h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #262626;
+            margin: 0 0 0.5rem 0;
+        }
+
+        /* Chat/Messages */
+        .chat-card {
+            background: white;
+            border: 1px solid #dbdbdb;
+            border-radius: 3px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 1rem;
+            border-bottom: 1px solid #dbdbdb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-target {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .chat-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            min-height: 300px;
+            max-height: 50vh;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .message {
+            padding: 0.75rem 1rem;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+            font-size: 0.9rem;
+        }
+
+        .message.me {
+            background: #0095f6;
+            color: white;
+            margin-left: auto;
+        }
+
+        .message.them {
+            background: #efefef;
+            color: #262626;
+        }
+
+        .chat-input {
+            padding: 1rem;
+            border-top: 1px solid #dbdbdb;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-input textarea {
+            flex: 1;
+            border-radius: 24px;
+            padding: 0.75rem 1rem;
+            border: 1px solid #dbdbdb;
+            resize: none;
+            max-height: 80px;
+        }
+
+        .chat-input button {
+            background: #0095f6;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+
+        .chat-input button:hover { background: #0084d9; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar-menu { gap: 1rem; font-size: 0.9rem; }
+            .posts-grid { grid-template-columns: 1fr; }
+            .profile-header { flex-direction: column; text-align: center; }
+            .avatar-img, .avatar-circle { width: 120px; height: 120px; }
+            .container { max-width: 100%; }
+            .post-grid-item { aspect-ratio: 1; }
+            .message { max-width: 90%; }
+        }
+
+        @media (max-width: 480px) {
+            .navbar-container { padding: 0.5rem; }
+            .navbar-brand { font-size: 1.2rem; }
+            .navbar-toggle { display: flex; }
+            .navbar-menu { display: none; flex-direction: column; position: absolute; top: 60px; left: 0; right: 0; background: white; gap: 0.5rem; padding: 1rem; }
+            .navbar-menu.active { display: flex; }
+            .posts-grid { grid-template-columns: 1fr; gap: 1rem; }
+            .users-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="/" class="navbar-brand">Instagram</a>
+            
+            <button class="navbar-toggle" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="navbar-menu" id="navbarMenu">
+                <li><a href="/">🏠 Početna</a></li>
+                
+                {% if user.is_authenticated %}
+                    <li><a href="/create" class="btn-nav-primary">➕ Novi Post</a></li>
+                    <li><a href="/users/me">👤 Profil</a></li>
+                    <li>
+                        <form method="post" action="{% url 'account_logout' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit">🚪 Odjavi se</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'account_login' %}">Prijavi se</a></li>
+                    <li><a href="{% url 'account_signup' %}" class="btn-nav-primary">Registruj se</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <div class="header">
+        <h1>{% block header %}Instagram Clone{% endblock %}</h1>
+        <p>{% block subheader %}Dijeli svoje trenutke{% endblock %}</p>
+    </div>
+
+    {% block content %}
+    {% endblock %}
+
+    <script>
+        function toggleMenu() {
+            const menu = document.getElementById('navbarMenu');
+            menu.classList.toggle('active');
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,270 @@
+{% extends 'posts/base.html' %}
+
+{% block title %}{{ target.username }} - Instagram Clone{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1200px; margin-top: 2rem;">
+    <!-- Profile Header -->
+    <div style="display: grid; grid-template-columns: 150px 1fr; gap: 3rem; margin-bottom: 3rem; align-items: start;">
+        <!-- Avatar -->
+        <div style="text-align: center;">
+            {% if target.profile_image %}
+                <img src="{{ target.profile_image.url }}" alt="{{ target.username }}" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 2px solid #dbdbdb;">
+            {% else %}
+                <div style="width: 150px; height: 150px; border-radius: 50%; background: linear-gradient(135deg, #0095f6, #ed4956); display: flex; align-items: center; justify-content: center; color: white; font-size: 4rem; font-weight: 700; margin: 0 auto;">
+                    {{ target.username|slice:":1"|upper }}
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Info -->
+        <div>
+            <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 1.5rem;">
+                <h1 style="margin: 0; font-size: 2rem; color: #262626;">{{ target.username }}</h1>
+                {% if request.user != target %}
+                    <div style="display: flex; gap: 0.75rem;">
+                        <button id="follow-btn" class="btn-follow {% if is_following %}following{% endif %}" style="background: {% if is_following %}#f0f0f0{% else %}#0095f6{% endif %}; color: {% if is_following %}#262626{% else %}white{% endif %};">
+                            {% if is_following %}Prestani pratiti{% else %}Prati{% endif %}
+                        </button>
+                        <a href="{% url 'chat_with' target.user_uuid %}" style="background: white; color: #262626; border: 1px solid #dbdbdb; padding: 0.65rem 1.5rem; border-radius: 24px; text-decoration: none; font-weight: 600; cursor: pointer;">
+                            Poruka
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Stats -->
+            <div style="display: flex; gap: 2rem; margin-bottom: 1.5rem;">
+                <div>
+                    <div style="font-weight: 700; font-size: 1.1rem; color: #262626;">{{ posts|length }}</div>
+                    <div style="color: #999; font-size: 0.85rem;">postova</div>
+                </div>
+                <div>
+                    <div style="font-weight: 700; font-size: 1.1rem; color: #262626;">{{ followers_count }}</div>
+                    <div style="color: #999; font-size: 0.85rem;">pratioca</div>
+                </div>
+                <div>
+                    <div style="font-weight: 700; font-size: 1.1rem; color: #262626;">{{ following_count }}</div>
+                    <div style="color: #999; font-size: 0.85rem;">prati</div>
+                </div>
+            </div>
+
+            <!-- Bio -->
+            <p style="color: #262626; margin: 0; line-height: 1.5;">
+                {{ target.first_name|default:'' }} {{ target.last_name|default:'' }}{% if target.first_name or target.last_name %}<br>{% endif %}
+                Član od {{ target.date_joined|date:"d.m.Y" }}
+            </p>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="border-top: 1px solid #efefef;">
+        <div style="display: flex; justify-content: center; gap: 2rem; padding: 1rem 0; border-bottom: 1px solid #efefef;">
+            <button class="profile-tab-btn active" data-tab="posts" style="color: #262626; font-weight: 700; border-bottom: 2px solid #262626; padding-bottom: 1rem;">📸 Postovi</button>
+            <button class="profile-tab-btn" data-tab="followers" style="color: #999; font-weight: 700; padding-bottom: 1rem;">👥 Pratioci</button>
+            <button class="profile-tab-btn" data-tab="following" style="color: #999; font-weight: 700; padding-bottom: 1rem;">🔗 Prati</button>
+        </div>
+
+        <!-- Posts Tab -->
+        <div class="profile-tab-content active" id="posts-tab" style="padding: 2rem 0;">
+            {% if posts %}
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+                    {% for post in posts %}
+                    <a href="/{{ post.uuid_field }}/" style="text-decoration: none; color: inherit; transition: all 0.2s;">
+                        <div style="border: 1px solid #dbdbdb; border-radius: 3px; overflow: hidden; aspect-ratio: 1;">
+                            {% if post.post_image %}
+                                <img src="{{ post.post_image.url }}" alt="{{ post.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #f0f9ff, #e0f2fe); display: flex; align-items: center; justify-content: center; font-size: 2rem;">📝</div>
+                            {% endif %}
+                        </div>
+                        <div style="margin-top: 0.5rem;">
+                            <div style="font-weight: 600; color: #262626; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ post.title }}</div>
+                            <div style="color: #999; font-size: 0.8rem;">{{ post.created_at|date:"d.m.Y" }}</div>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 3rem 2rem; color: #999;">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">📭</div>
+                    <p>Nema postova</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Followers Tab -->
+        <div class="profile-tab-content" id="followers-tab" style="padding: 2rem 0;">
+            {% if followers %}
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem;">
+                    {% for f in followers %}
+                    <div style="border: 1px solid #dbdbdb; border-radius: 3px; padding: 1.5rem; text-align: center;">
+                        <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #0095f6, #ed4956); margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: 700;">
+                            {{ f.username|slice:":1"|upper }}
+                        </div>
+                        <a href="{% url 'profile' f.uuid %}" style="color: #262626; text-decoration: none; font-weight: 600; display: block; margin-bottom: 0.75rem;">{{ f.username }}</a>
+                        <a href="{% url 'profile' f.uuid %}" style="display: inline-block; background: #0095f6; color: white; padding: 0.5rem 1rem; border-radius: 24px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">Profil</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 3rem 2rem; color: #999;">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">👥</div>
+                    <p>Nema pratioca</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Following Tab -->
+        <div class="profile-tab-content" id="following-tab" style="padding: 2rem 0;">
+            {% if following %}
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem;">
+                    {% for u in following %}
+                    <div style="border: 1px solid #dbdbdb; border-radius: 3px; padding: 1.5rem; text-align: center;">
+                        <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #0095f6, #ed4956); margin: 0 auto 1rem; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: 700;">
+                            {{ u.username|slice:":1"|upper }}
+                        </div>
+                        <a href="{% url 'profile' u.uuid %}" style="color: #262626; text-decoration: none; font-weight: 600; display: block; margin-bottom: 0.75rem;">{{ u.username }}</a>
+                        <a href="{% url 'profile' u.uuid %}" style="display: inline-block; background: #0095f6; color: white; padding: 0.5rem 1rem; border-radius: 24px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">Profil</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="text-align: center; padding: 3rem 2rem; color: #999;">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">🔗</div>
+                    <p>Ne prati nikoga</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.btn-follow {
+    border: none;
+    padding: 0.65rem 1.5rem;
+    border-radius: 24px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-follow:hover {
+    opacity: 0.9;
+}
+
+.profile-tab-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.profile-tab-btn.active {
+    border-bottom: 2px solid #262626;
+}
+
+.profile-tab-btn:not(.active) {
+    color: #999;
+    border-bottom: 2px solid transparent;
+}
+
+.profile-tab-content {
+    display: none;
+}
+
+.profile-tab-content.active {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    div[style*="grid-template-columns: 150px 1fr"] {
+        grid-template-columns: 100px 1fr;
+        gap: 1.5rem;
+    }
+
+    h1[style*="font-size: 2rem"] {
+        font-size: 1.5rem;
+    }
+
+    div[style*="display: flex; gap: 2rem; margin-bottom: 1.5rem"] {
+        gap: 1rem;
+    }
+
+    div[style*="grid-template-columns: repeat(auto-fill, minmax(200px"] {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    div[style*="grid-template-columns: 150px 1fr"] {
+        grid-template-columns: 80px 1fr;
+    }
+
+    div[style*="grid-template-columns: repeat(auto-fill, minmax(200px"] {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    div[style*="display: flex; justify-content: center; gap: 2rem"] {
+        gap: 1rem;
+        overflow-x: auto;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    const tabBtns = document.querySelectorAll('.profile-tab-btn');
+    const tabContents = document.querySelectorAll('.profile-tab-content');
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', function(){
+            const tabId = this.getAttribute('data-tab');
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            this.style.borderBottomColor = '#262626';
+            document.getElementById(tabId + '-tab').classList.add('active');
+            
+            // Reset other buttons
+            tabBtns.forEach(b => {
+                if (b !== this) {
+                    b.style.color = '#999';
+                    b.style.borderBottomColor = 'transparent';
+                }
+            });
+            this.style.color = '#262626';
+        });
+    });
+
+    const followBtn = document.getElementById('follow-btn');
+    if(followBtn){
+        followBtn.addEventListener('click', function(){
+            const url = "{% url 'toggle_follow' target.user_uuid %}";
+            const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            const headers = { 'X-CSRFToken': csrf ? csrf.value : '' };
+            fetch(url, { method: 'POST', headers, credentials: 'same-origin' })
+                .then(r => r.json())
+                .then(data => {
+                    if(data.following){
+                        followBtn.classList.add('following');
+                        followBtn.textContent = 'Prestani pratiti';
+                        followBtn.style.background = '#f0f0f0';
+                        followBtn.style.color = '#262626';
+                    } else {
+                        followBtn.classList.remove('following');
+                        followBtn.textContent = 'Prati';
+                        followBtn.style.background = '#0095f6';
+                        followBtn.style.color = 'white';
+                    }
+                })
+                .catch(err => console.error(err));
+        });
+    }
+});
+</script>
+
+{% endblock %}

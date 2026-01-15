@@ -1,0 +1,159 @@
+{% extends 'posts/base.html' %}
+
+{% block title %}Kreiraj Novi Post{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 500px; margin: 2rem auto;">
+    <div style="background: white; border: 1px solid #dbdbdb; border-radius: 3px; padding: 2rem; margin-bottom: 2rem;">
+        <h1 style="text-align: center; margin-bottom: 2rem; font-size: 1.75rem; color: #262626;">Kreiraj Post</h1>
+        
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Title -->
+            <div style="margin-bottom: 1.5rem;">
+                <label for="id_title" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #262626; font-size: 0.9rem;">Naslov</label>
+                {{ form.title }}
+            </div>
+
+            <!-- Content -->
+            <div style="margin-bottom: 1.5rem;">
+                <label for="id_content" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #262626; font-size: 0.9rem;">Opis</label>
+                {{ form.content }}
+            </div>
+
+            <!-- Image -->
+            <div style="margin-bottom: 1.5rem;">
+                <label for="id_post_image" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #262626; font-size: 0.9rem;">Slika</label>
+                <div style="position: relative; border: 2px dashed #dbdbdb; border-radius: 3px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s;" id="image-drop" onclick="document.getElementById('id_post_image').click()">
+                    <div id="image-preview" style="display: none;">
+                        <img id="preview-img" src="" alt="Preview" style="max-width: 100%; max-height: 300px; border-radius: 3px;">
+                    </div>
+                    <div id="image-placeholder">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📷</div>
+                        <div style="color: #262626; font-weight: 600;">Klikni ili prevuci sliku</div>
+                        <div style="color: #999; font-size: 0.85rem;">Samo JPG, PNG do 10MB</div>
+                    </div>
+                    {{ form.post_image }}
+                </div>
+            </div>
+
+            <!-- Form Errors -->
+            {% if form.errors %}
+            <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 3px; padding: 1rem; margin-bottom: 1.5rem; color: #dc2626;">
+                {% for field, errors in form.errors.items %}
+                    <div><strong>{{ field }}:</strong> {{ errors.0 }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Submit -->
+            <div style="display: flex; gap: 0.75rem;">
+                <button type="submit" style="flex: 1; background: #0095f6; color: white; border: none; padding: 0.75rem 1rem; border-radius: 24px; font-weight: 600; cursor: pointer; font-size: 0.9rem; transition: all 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                    Objavi Post
+                </button>
+                <a href="/" style="flex: 1; text-align: center; background: #f0f0f0; color: #262626; border: none; padding: 0.75rem 1rem; border-radius: 24px; font-weight: 600; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                    Odustani
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+#id_title, #id_content {
+    width: 100%;
+    border: 1px solid #dbdbdb;
+    border-radius: 3px;
+    padding: 0.75rem;
+    font-size: 0.95rem;
+    color: #262626;
+    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica Neue, sans-serif;
+    transition: all 0.2s;
+}
+
+#id_title:focus, #id_content:focus {
+    outline: none;
+    border-color: #0095f6;
+    box-shadow: 0 0 0 2px rgba(0, 149, 246, 0.1);
+}
+
+#id_title {
+    min-height: 44px;
+}
+
+#id_content {
+    resize: vertical;
+    min-height: 100px;
+    max-height: 300px;
+}
+
+#id_post_image {
+    display: none;
+}
+
+#image-drop {
+    background: #fafafa;
+}
+
+#image-drop:hover {
+    background: #f5f5f5;
+    border-color: #0095f6;
+}
+
+@media (max-width: 640px) {
+    .container {
+        padding: 0 1rem;
+        margin: 1rem auto !important;
+    }
+    
+    div[style*="padding: 2rem"] {
+        padding: 1.5rem !important;
+    }
+}
+</style>
+
+<script>
+const imageInput = document.getElementById('id_post_image');
+const imageDrop = document.getElementById('image-drop');
+const preview = document.getElementById('image-preview');
+const placeholder = document.getElementById('image-placeholder');
+const previewImg = document.getElementById('preview-img');
+
+imageInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            preview.style.display = 'block';
+            placeholder.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+imageDrop.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    imageDrop.style.borderColor = '#0095f6';
+    imageDrop.style.background = '#f0f8ff';
+});
+
+imageDrop.addEventListener('dragleave', (e) => {
+    imageDrop.style.borderColor = '#dbdbdb';
+    imageDrop.style.background = '#fafafa';
+});
+
+imageDrop.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const files = e.dataTransfer.files;
+    if (files.length) {
+        imageInput.files = files;
+        const event = new Event('change', { bubbles: true });
+        imageInput.dispatchEvent(event);
+    }
+    imageDrop.style.borderColor = '#dbdbdb';
+    imageDrop.style.background = '#fafafa';
+});
+</script>
+{% endblock %}

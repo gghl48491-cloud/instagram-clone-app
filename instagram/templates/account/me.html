@@ -1,0 +1,421 @@
+{% extends 'posts/base.html' %}
+
+{% block title %}{{ user.username }} - Moj Profil{% endblock %}
+
+{% block header %}Moj Profil{% endblock %}
+{% block subheader %}Upravljajte sadržajem i porukama{% endblock %}
+
+{% block content %}
+<div class="container profile-me-container">
+    <!-- User Info Card -->
+    <div class="profile-header">
+        <div class="profile-avatar">
+            <form id="profile-image-form" method="POST" enctype="multipart/form-data" action="">
+                {% csrf_token %}
+                <label for="profile-image-input" class="avatar-container" title="Promijeni profilnu sliku">
+                    {% if user.profile_image and user.profile_image.url %}
+                        <img src="{{ user.profile_image.url }}" alt="{{ user.username }}" class="avatar-img">
+                    {% else %}
+                        <div class="avatar-circle">{{ user.username|slice:":1"|upper }}</div>
+                    {% endif %}
+                    <div class="avatar-overlay"><span>📷 Promijeni</span></div>
+                </label>
+                <input id="profile-image-input" type="file" name="profile_image" accept="image/*" class="file-input-hidden">
+            </form>
+        </div>
+        <div class="profile-info">
+            <h2>{{ user.username }}</h2>
+            <p class="profile-email">{{ user.email }}</p>
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <span class="stat-number">{{ posts|length }}</span>
+                    <span class="stat-label">Postova</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ conversations|length }}</span>
+                    <span class="stat-label">Razgovora</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ followers_count }}</span>
+                    <span class="stat-label">Pratioca</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">{{ following_count }}</span>
+                    <span class="stat-label">Prati</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="tabs-container">
+        <div class="tabs-nav">
+            <button class="tab-btn active" data-tab="posts">📸 Moji Postovi</button>
+            <button class="tab-btn" data-tab="chats">💬 Razgovori ({{ conversations|length }})</button>
+            <button class="tab-btn" data-tab="followers">👥 Moji Pratioci ({{ followers_count }})</button>
+            <button class="tab-btn" data-tab="following">🔗 Pratim ({{ following_count }})</button>
+        </div>
+
+        <!-- Posts Tab -->
+        <div class="tab-content active" id="posts-tab">
+            <div class="tab-header">
+                <h3>Moji Postovi</h3>
+                <a href="/create" class="btn-create-post">➕ Kreiraj Novi Post</a>
+            </div>
+            {% if posts %}
+                <div class="posts-grid">
+                    {% for post in posts %}
+                    <div class="post-grid-item">
+                        <a href="/{{ post.uuid_field }}" class="post-grid-image">
+                            {% if post.post_image %}
+                                <img src="{{ post.post_image.url }}" alt="{{ post.title }}">
+                            {% else %}
+                                <div class="post-no-image">📝</div>
+                            {% endif %}
+                        </a>
+                        <div class="post-grid-info">
+                            <a href="/{{ post.uuid_field }}" class="post-title">{{ post.title }}</a>
+                            <div class="post-grid-actions">
+                                <a href="/{{ post.uuid_field }}" class="btn-grid-view">👁️</a>
+                                <a href="/{{ post.uuid_field }}/update" class="btn-grid-edit">✏️</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <h4>Nemate još nijedan post</h4>
+                    <p>Kreirajte svoj prvi post i podijelite ga sa svijetom!</p>
+                    <a href="/create" class="btn-empty-create">Kreiraj Prvi Post</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Chats Tab -->
+        <div class="tab-content" id="chats-tab">
+            <h3>Moji Razgovori</h3>
+            {% if conversations %}
+                <div class="users-grid">
+                    {% for user_conv in conversations %}
+                    <a href="/chat/{{ user_conv.user_uuid }}/" class="user-card">
+                        {% if user_conv.profile_image %}
+                            <img src="{{ user_conv.profile_image.url }}" alt="{{ user_conv.username }}" class="user-avatar">
+                        {% else %}
+                            <div class="user-avatar-placeholder">{{ user_conv.username|slice:":1"|upper }}</div>
+                        {% endif %}
+                        <h4>{{ user_conv.username }}</h4>
+                        <span class="btn-chat-link">💬 Otkrij razgovor</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">💬</div>
+                    <h4>Nema aktivnih razgovora</h4>
+                    <p>Posjetite profil drugog korisnika i započnite razgovor!</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Followers Tab -->
+        <div class="tab-content" id="followers-tab">
+            <h3>Moji Pratioci</h3>
+            {% if followers %}
+                <div class="users-grid">
+                    {% for follower in followers %}
+                    <a href="/users/{{ follower.uuid }}/" class="user-card">
+                        {% if follower.image %}
+                            <img src="{{ follower.image }}" alt="{{ follower.username }}" class="user-avatar">
+                        {% else %}
+                            <div class="user-avatar-placeholder">{{ follower.username|slice:":1"|upper }}</div>
+                        {% endif %}
+                        <h4>{{ follower.username }}</h4>
+                        <span class="btn-view-profile">👤 Profil</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">👥</div>
+                    <h4>Nema pratioca</h4>
+                    <p>Još nitko vas ne prati. Kreirajte odličan sadržaj!</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Following Tab -->
+        <div class="tab-content" id="following-tab">
+            <h3>Koje Pratim</h3>
+            {% if following %}
+                <div class="users-grid">
+                    {% for followed in following %}
+                    <a href="/users/{{ followed.uuid }}/" class="user-card">
+                        {% if followed.image %}
+                            <img src="{{ followed.image }}" alt="{{ followed.username }}" class="user-avatar">
+                        {% else %}
+                            <div class="user-avatar-placeholder">{{ followed.username|slice:":1"|upper }}</div>
+                        {% endif %}
+                        <h4>{{ followed.username }}</h4>
+                        <span class="btn-view-profile">👤 Profil</span>
+                    </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">🔗</div>
+                    <h4>Ne pratite nikoga</h4>
+                    <p>Pronađite zanimljive korisnike i počnite ih pratiti!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+<style>
+.profile-me-container { max-width: 1200px; margin: 0 auto; }
+
+/* Profile Header */
+.profile-header {
+    background: white; border-radius: 16px; padding: 2rem; margin-bottom: 2rem;
+    box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 2rem;
+}
+.profile-avatar { position: relative; flex-shrink: 0; }
+.avatar-container { position: relative; display: inline-block; cursor: pointer; border-radius: 50%; }
+.avatar-img, .avatar-circle {
+    width: 120px; height: 120px; border-radius: 50%; object-fit: cover;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+.avatar-circle {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    display: flex; align-items: center; justify-content: center; color: white;
+    font-size: 2.5rem; font-weight: 700;
+}
+.avatar-overlay {
+    position: absolute; inset: 0; border-radius: 50%; display: flex;
+    align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.5);
+    color: white; opacity: 0; transition: opacity 0.3s; font-size: 0.9rem; font-weight: 600;
+}
+.avatar-container:hover .avatar-overlay { opacity: 1; }
+.file-input-hidden { display: none; }
+
+.profile-info { flex: 1; }
+.profile-info h2 { font-size: 1.75rem; margin: 0 0 0.25rem 0; font-weight: 700; }
+.profile-email { color: var(--text-secondary); margin: 0 0 1rem 0; font-size: 0.95rem; }
+.profile-stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 1.5rem;
+}
+.stat-item { display: flex; flex-direction: column; }
+.stat-number {
+    font-size: 1.75rem; font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.stat-label { color: var(--text-secondary); font-size: 0.8rem; margin-top: 0.25rem; }
+
+/* Tabs */
+.tabs-container { background: white; border-radius: 12px; box-shadow: var(--shadow-lg); overflow: hidden; }
+.tabs-nav {
+    display: flex; border-bottom: 2px solid var(--border-color); overflow-x: auto;
+    background: var(--bg-color);
+}
+.tab-btn {
+    padding: 1rem 1.5rem; background: transparent; border: none; cursor: pointer;
+    font-weight: 600; color: var(--text-secondary); transition: all 0.3s;
+    border-bottom: 3px solid transparent; white-space: nowrap;
+}
+.tab-btn.active {
+    color: var(--primary-color); border-bottom-color: var(--primary-color);
+}
+.tab-btn:hover { color: var(--primary-color); }
+
+.tab-content { display: none; padding: 2rem; animation: fadeIn 0.3s; }
+.tab-content.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.tab-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+.tab-header h3 { margin: 0; font-size: 1.5rem; }
+
+/* Posts Grid */
+.posts-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+}
+.post-grid-item {
+    background: var(--bg-color); border-radius: 8px; overflow: hidden;
+    transition: transform 0.2s; border: 1px solid var(--border-color);
+}
+.post-grid-item:hover { transform: translateY(-4px); }
+.post-grid-image {
+    display: block; width: 100%; height: 180px; overflow: hidden;
+}
+.post-grid-image img {
+    width: 100%; height: 100%; object-fit: cover;
+}
+.post-no-image {
+    width: 100%; height: 100%; background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    display: flex; align-items: center; justify-content: center; font-size: 2.5rem;
+}
+.post-grid-info { padding: 0.75rem; }
+.post-title {
+    display: block; font-weight: 600; color: var(--text-primary);
+    text-decoration: none; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; font-size: 0.9rem; margin-bottom: 0.5rem;
+}
+.post-title:hover { color: var(--primary-color); }
+.post-grid-actions { display: flex; gap: 0.5rem; }
+.btn-grid-view, .btn-grid-edit {
+    flex: 1; padding: 0.4rem; border-radius: 6px; text-decoration: none;
+    font-size: 0.9rem; text-align: center; transition: all 0.2s;
+    background: var(--bg-color); border: 1px solid var(--border-color);
+}
+.btn-grid-view:hover { background: var(--primary-color); color: white; }
+.btn-grid-edit:hover { background: var(--secondary-color); color: white; }
+
+/* Users Grid (for conversations, followers, following) */
+.users-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem;
+}
+.user-card {
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    padding: 1rem; background: var(--bg-color); border-radius: 8px;
+    text-decoration: none; transition: all 0.2s; border: 1px solid var(--border-color);
+}
+.user-card:hover {
+    transform: translateY(-4px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary-color);
+}
+.user-avatar, .user-avatar-placeholder {
+    width: 80px; height: 80px; border-radius: 50%; margin-bottom: 0.75rem;
+    object-fit: cover;
+}
+.user-avatar-placeholder {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    display: flex; align-items: center; justify-content: center; color: white;
+    font-weight: 700; font-size: 2rem;
+}
+.user-card h4 { margin: 0 0 0.5rem 0; font-size: 0.95rem; color: var(--text-primary); }
+.btn-chat-link, .btn-view-profile {
+    display: inline-block; padding: 0.4rem 0.75rem; background: var(--primary-color);
+    color: white; text-decoration: none; border-radius: 6px; font-size: 0.8rem;
+    font-weight: 600; transition: all 0.2s;
+}
+.btn-chat-link:hover, .btn-view-profile:hover {
+    background: var(--secondary-color); transform: scale(1.05);
+}
+
+/* Create Button */
+.btn-create-post {
+    padding: 0.6rem 1.2rem; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white; text-decoration: none; border-radius: 8px; font-weight: 600;
+    transition: all 0.2s; border: none; cursor: pointer;
+}
+.btn-create-post:hover { transform: translateY(-2px); }
+
+/* Empty State */
+.empty-state {
+    background: var(--bg-color); border-radius: 12px; padding: 3rem 2rem;
+    text-align: center; border: 2px dashed var(--border-color);
+}
+.empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+.empty-state h4 { font-size: 1.25rem; margin: 0 0 0.5rem 0; }
+.empty-state p { color: var(--text-secondary); margin: 0 0 1.5rem 0; }
+.btn-empty-create {
+    display: inline-block; padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white; text-decoration: none; border-radius: 8px; font-weight: 600;
+}
+
+/* File Input Styling */
+input[type="file"] {
+    display: none;
+}
+input[type="file"]::-webkit-file-upload-button {
+    padding: 0.6rem 1.2rem; background: var(--primary-color); color: white;
+    border: none; border-radius: 6px; cursor: pointer; font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .profile-header { flex-direction: column; text-align: center; padding: 1.5rem; gap: 1rem; }
+    .avatar-img, .avatar-circle { width: 100px; height: 100px; }
+    .profile-info h2 { font-size: 1.5rem; }
+    .profile-stats { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    .tabs-nav { overflow-x: auto; }
+    .tab-btn { padding: 0.75rem 1rem; font-size: 0.9rem; }
+    .tab-content { padding: 1.5rem; }
+    .posts-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+    .users-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+    .tab-header { flex-direction: column; gap: 1rem; align-items: flex-start; }
+    .btn-create-post { width: 100%; }
+}
+
+@media (max-width: 480px) {
+    .profile-header { padding: 1rem; }
+    .avatar-img, .avatar-circle { width: 80px; height: 80px; font-size: 2rem; }
+    .profile-stats { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+    .stat-label { font-size: 0.7rem; }
+    .posts-grid, .users-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.75rem; }
+    .tab-btn { padding: 0.6rem 0.8rem; font-size: 0.85rem; }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    // Tab switching
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', function(){
+            const tabId = this.getAttribute('data-tab');
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById(tabId + '-tab').classList.add('active');
+        });
+    });
+
+    // Profile image upload
+    const input = document.getElementById('profile-image-input');
+    const form = document.getElementById('profile-image-form');
+    
+    if(input) {
+        input.addEventListener('change', function(){
+            const file = this.files && this.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e){
+                const img = document.querySelector('.avatar-img');
+                if(img){
+                    img.src = e.target.result;
+                } else {
+                    const circle = document.querySelector('.avatar-circle');
+                    if(circle){
+                        const imageElem = document.createElement('img');
+                        imageElem.className = 'avatar-img';
+                        imageElem.src = e.target.result;
+                        circle.replaceWith(imageElem);
+                    }
+                }
+            };
+            reader.readAsDataURL(file);
+            form.submit();
+        });
+    }
+
+    // Avatar container keyboard navigation
+    const container = document.querySelector('.avatar-container');
+    if(container){
+        container.setAttribute('tabindex', '0');
+        container.addEventListener('keydown', function(e){
+            if(e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                input && input.click();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

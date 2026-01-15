@@ -1,0 +1,59 @@
+{% extends 'account/auth_base.html' %}
+
+{% block title %}Prijava - Instagram Clone{% endblock %}
+
+{% block content %}
+    <div class="auth-header">
+        <div class="auth-logo">📷</div>
+        <h1>Instagram Clone</h1>
+        <p>Prijavite se da vidite fotografije i video-klipove od prijatelja.</p>
+    </div>
+
+    <form method="post" class="auth-form" action="{% url 'account_login' %}">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="id_login">Email ili korisničko ime</label>
+            {{ form.login }}
+            {% if form.login.errors %}
+                <ul class="errorlist">
+                    {% for error in form.login.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="id_password">Lozinka</label>
+            {{ form.password }}
+            {% if form.password.errors %}
+                <ul class="errorlist">
+                    {% for error in form.password.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-error">
+                {% for error in form.non_field_errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <button type="submit" class="btn-auth">Prijavi se</button>
+    </form>
+
+    <div class="divider">ili</div>
+
+    <div class="auth-links">
+        <p><a href="{% url 'account_reset_password' %}">Zaboravili ste lozinku?</a></p>
+    </div>
+
+    <div class="auth-alternate">
+        <p>Nemate nalog? <a href="{% url 'account_signup' %}">Registrujte se</a></p>
+    </div>
+{% endblock %}
